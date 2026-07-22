@@ -1,4 +1,4 @@
-````markdown
+
 # 🚀 CodeNGrow Arduino Projects
 
 Welcome to the **CodeNGrow Arduino Projects** repository!
