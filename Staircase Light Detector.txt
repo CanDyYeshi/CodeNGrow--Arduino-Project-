@@ -1,0 +1,67 @@
+
+//=========================================================
+// Pin Numbers 
+//=========================================================
+const int IR1_PIN = 2;
+const int IR2_PIN = 3;
+const int RELAY_PIN = 8;
+
+//=========================================================
+// Adjustable Settings
+//=========================================================
+const unsigned long LIGHT_TIME = 3000;   // Light ON for 3 seconds
+
+//=========================================================
+// Variables
+//=========================================================
+unsigned long lightStartTime = 0;
+bool lightOn = false;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(IR1_PIN, INPUT);
+  pinMode(IR2_PIN, INPUT);
+
+  pinMode(RELAY_PIN, OUTPUT);
+
+  digitalWrite(RELAY_PIN, LOW);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  bool ir1 = digitalRead(IR1_PIN);
+  bool ir2 = digitalRead(IR2_PIN);
+
+  //-------------------------------------------------------
+  // If Any IR Sensor Detects
+  //-------------------------------------------------------
+  if (ir1 == LOW || ir2 == LOW)
+  {
+    digitalWrite(RELAY_PIN, HIGH);
+
+    lightOn = true;
+    lightStartTime = millis();
+
+    Serial.println("Person Detected - Light ON");
+  }
+
+  //-------------------------------------------------------
+  // Turn OFF after 3 seconds
+  //-------------------------------------------------------
+  if (lightOn && (millis() - lightStartTime >= LIGHT_TIME))
+  {
+    digitalWrite(RELAY_PIN, LOW);
+
+    lightOn = false;
+
+    Serial.println("Light OFF");
+  }
+}

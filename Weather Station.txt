@@ -1,0 +1,30 @@
+#include <Servo.h>
+
+Servo myServo;
+
+const int rainSensor = 2;   // Rain sensor DO pin
+const int servoPin = 9;     // Servo signal pin
+
+void setup() {
+  pinMode(rainSensor, INPUT);
+
+  myServo.attach(servoPin);
+  myServo.write(0);          // Servo starts DOWN
+
+  Serial.begin(9600);
+}
+
+void loop() {
+  int rain = digitalRead(rainSensor);
+
+  if (rain == LOW) {         // Water detected
+    myServo.write(90);       // Servo UP
+    Serial.println("Rain Detected - Servo UP");
+  }
+  else {                     // No water
+    myServo.write(0);        // Servo DOWN
+    Serial.println("No Rain - Servo DOWN");
+  }
+
+  delay(200);
+}

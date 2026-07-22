@@ -1,0 +1,191 @@
+/*
+=========================================================
+Condition:
+✔ Press any key to enter password.
+✔ Press '#' to verify password.
+✔ Press '*' to clear entered password.
+✔ Correct Password:
+      - Green LED ON for 3 seconds.
+      - Buzzer Beep-Beep (2 short beeps).
+✔ Wrong Password:
+      - Red LED ON for 3 seconds.
+      - Buzzer ON continuously for 3 seconds.
+✔ A, B, C, D keys are also supported.
+
+---------------------------------------------------------
+Pin Connections
+---------------------------------------------------------
+
+4x4 Keypad
+
+R1 -> D2
+R2 -> D3
+R3 -> D4
+R4 -> D5
+
+C1 -> D6
+C2 -> D7
+C3 -> D8
+C4 -> D9
+
+Buzzer
++ -> D10
+- -> GND
+
+Green LED
++ -> D11 (470Ω resistor)
+- -> GND
+
+Red LED
++ -> D12 (470Ω resistor)
+- -> GND
+
+=========================================================
+*/
+
+#include <Keypad.h>
+
+//=========================================================
+// Adjustable Settings
+//=========================================================
+String correctPassword = "1234";      // Change password here
+
+const byte ROWS = 4;
+const byte COLS = 4;
+
+//=========================================================
+// Keypad Layout
+//=========================================================
+char keys[ROWS][COLS] =
+{
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+
+//=========================================================
+// Keypad Pins
+//=========================================================
+byte rowPins[ROWS] = {2, 3, 4, 5};
+byte colPins[COLS] = {6, 7, 8, 9};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+//=========================================================
+// Output Pins
+//=========================================================
+const int BUZZER = 10;
+const int GREEN_LED = 11;
+const int RED_LED = 12;
+
+//=========================================================
+// Variables
+//=========================================================
+String enteredPassword = "";
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(BUZZER, OUTPUT);
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+
+  digitalWrite(BUZZER, LOW);
+  digitalWrite(GREEN_LED, LOW);
+  digitalWrite(RED_LED, LOW);
+
+  Serial.println("Smart Door Lock Ready");
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  char key = keypad.getKey();
+
+  if (key)
+  {
+    // Short beep on every key press
+    tone(BUZZER, 2000);
+    delay(60);
+    noTone(BUZZER);
+
+    Serial.print("Key Pressed: ");
+    Serial.println(key);
+
+    //-----------------------------------------------------
+    // Check Password
+    //-----------------------------------------------------
+    if (key == '#')
+    {
+      checkPassword();
+    }
+
+    //-----------------------------------------------------
+    // Clear Password
+    //-----------------------------------------------------
+    else if (key == '*')
+    {
+      enteredPassword = "";
+      Serial.println("Password Cleared");
+    }
+
+    //-----------------------------------------------------
+    // Store Every Key (including A, B, C, D)
+    //-----------------------------------------------------
+    else
+    {
+      enteredPassword += key;
+    }
+  }
+}
+
+//=========================================================
+// Password Checking Function
+//=========================================================
+void checkPassword()
+{
+  if (enteredPassword == correctPassword)
+  {
+    Serial.println("Correct Password");
+
+    digitalWrite(GREEN_LED, HIGH);
+
+    // Beep-Beep
+    tone(BUZZER, 2000);
+    delay(150);
+    noTone(BUZZER);
+
+    delay(150);
+
+    tone(BUZZER, 2000);
+    delay(150);
+    noTone(BUZZER);
+
+    delay(2550);   // Total LED ON = 3 seconds
+
+    digitalWrite(GREEN_LED, LOW);
+  }
+  else
+  {
+    Serial.println("Wrong Password");
+
+    digitalWrite(RED_LED, HIGH);
+
+    // Continuous buzzer
+    tone(BUZZER, 1500);
+    delay(3000);
+    noTone(BUZZER);
+
+    digitalWrite(RED_LED, LOW);
+  }
+
+  // Clear entered password
+  enteredPassword = "";
+}

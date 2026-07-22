@@ -1,0 +1,61 @@
+
+
+#include <Servo.h>
+
+//=========================================================
+// Pin Numbers
+//=========================================================
+const int IR_PIN = 2;
+const int SERVO_PIN = 3;
+
+//=========================================================
+// Adjustable Settings
+//=========================================================
+const int SERVO_OPEN = 90;      // Dispense position
+const int SERVO_CLOSE = 0;      // Home position
+const int DISPENSE_TIME = 1000; // 1 second
+
+Servo dispenserServo;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(IR_PIN, INPUT);
+
+  dispenserServo.attach(SERVO_PIN);
+
+  // Start in closed position
+  dispenserServo.write(SERVO_CLOSE);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  int object = digitalRead(IR_PIN);
+
+  // Most IR modules output LOW when an object is detected
+  if (object == LOW)
+  {
+    Serial.println("Object Detected");
+
+    // Rotate servo to dispense food
+    dispenserServo.write(SERVO_OPEN);
+
+    // Wait for 1 second
+    delay(DISPENSE_TIME);
+
+    // Return servo to home position
+    dispenserServo.write(SERVO_CLOSE);
+
+    // Prevent repeated dispensing while object remains
+    delay(1000);
+  }
+
+  delay(100);
+}

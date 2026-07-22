@@ -1,0 +1,43 @@
+// Pin Numbers 
+//=========================================================
+const int MQ2_PIN = 2;        // Digital Output (DO) of MQ-2
+const int BUZZER_PIN = 8;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(MQ2_PIN, INPUT);
+  pinMode(BUZZER_PIN, OUTPUT);
+
+  digitalWrite(BUZZER_PIN, LOW);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  // Read MQ-2 sensor
+  int gasDetected = digitalRead(MQ2_PIN);
+
+  if (gasDetected == LOW)   // LOW = Gas/Smoke Detected (most MQ-2 modules)
+  {
+    Serial.println("WARNING! Gas/Smoke Detected");
+
+    // Turn buzzer ON
+    digitalWrite(BUZZER_PIN, HIGH);
+  }
+  else
+  {
+    Serial.println("Air Normal");
+
+    // Turn buzzer OFF
+    digitalWrite(BUZZER_PIN, LOW);
+  }
+
+  delay(100);
+}

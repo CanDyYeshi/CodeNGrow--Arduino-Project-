@@ -1,0 +1,78 @@
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+//=========================================================
+// LCD Settings
+//=========================================================
+// Change 0x27 to 0x3F if LCD does not display anything
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+//=========================================================
+// Pin Numbers (Students can change if required)
+//=========================================================
+const int TRIG_PIN = 9;
+const int ECHO_PIN = 8;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  // Initialize LCD
+  lcd.init();
+  lcd.backlight();
+
+  // Set pin modes
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  // Welcome Message
+  lcd.setCursor(0, 0);
+  lcd.print(" Ultrasonic ");
+  lcd.setCursor(0, 1);
+  lcd.print("Distance Meter");
+
+  delay(2000);
+  lcd.clear();
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  // Send ultrasonic pulse
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+
+  digitalWrite(TRIG_PIN, LOW);
+
+  // Read Echo Time
+  long duration = pulseIn(ECHO_PIN, HIGH);
+
+  // Convert time into distance (cm)
+  float distance = duration * 0.0343 / 2;
+
+  // Display Heading
+  lcd.setCursor(0, 0);
+  lcd.print("Distance:");
+
+  // Display Distance
+  lcd.setCursor(0, 1);
+
+  if (distance < 2 || distance > 400)
+  {
+    lcd.print("Out of Range  ");
+  }
+  else
+  {
+    lcd.print(distance, 1);   // 1 decimal place
+    lcd.print(" cm      ");
+  }
+
+  delay(250);
+}

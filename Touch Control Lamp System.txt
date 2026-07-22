@@ -1,0 +1,57 @@
+
+//=========================================================
+// Pin Numbers 
+//=========================================================
+const int TOUCH_PIN = 2;
+const int RELAY_PIN = 8;
+
+//=========================================================
+// Variables
+//=========================================================
+bool lampState = false;
+bool lastTouchState = LOW;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(TOUCH_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
+
+  // Lamp OFF initially
+  digitalWrite(RELAY_PIN, LOW);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  // Read Touch Sensor
+  bool currentTouchState = digitalRead(TOUCH_PIN);
+
+  //-------------------------------------------------------
+  // Detect a New Touch
+  //-------------------------------------------------------
+  if (currentTouchState == HIGH && lastTouchState == LOW)
+  {
+    // Toggle Lamp
+    lampState = !lampState;
+
+    digitalWrite(RELAY_PIN, lampState);
+
+    if (lampState)
+      Serial.println("Lamp ON");
+    else
+      Serial.println("Lamp OFF");
+
+    // Debounce delay
+    delay(300);
+  }
+
+  // Save current state
+  lastTouchState = currentTouchState;
+}

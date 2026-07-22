@@ -1,0 +1,123 @@
+/*
+=========================================================
+
+Condition:
+✔ Object Detected + Dry Waste -> Servo LEFT
+✔ Object Detected + Wet Waste -> Servo RIGHT
+✔ Wait 2 seconds
+✔ Servo returns to Center
+
+=========================================================
+*/
+
+#include <Servo.h>
+
+//=========================================================
+// Pin Numbers 
+//=========================================================
+const int SOIL_PIN = 2;
+const int TRIG_PIN = 9;
+const int ECHO_PIN = 10;
+const int SERVO_PIN = 3;
+
+//=========================================================
+// Adjustable Settings
+//=========================================================
+const int DETECT_DISTANCE = 15;   // cm
+
+const int LEFT_ANGLE = 0;         // Dry Waste
+const int CENTER_ANGLE = 90;      // Default Position
+const int RIGHT_ANGLE = 180;      // Wet Waste
+
+const int SERVO_TIME = 2000;      // 2 seconds
+
+Servo wasteServo;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(SOIL_PIN, INPUT);
+
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  wasteServo.attach(SERVO_PIN);
+
+  wasteServo.write(CENTER_ANGLE);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  int distance = getDistance();
+
+  //-------------------------------------------------------
+  // Object Detected
+  //-------------------------------------------------------
+  if(distance <= DETECT_DISTANCE)
+  {
+    int soil = digitalRead(SOIL_PIN);
+
+    //-----------------------------------------------------
+    // Wet Waste Detected
+    // Most Soil Sensor Modules:
+    // LOW = Wet
+    //-----------------------------------------------------
+    if(soil == LOW)
+    {
+      Serial.println("Wet Waste");
+
+      wasteServo.write(RIGHT_ANGLE);
+
+      delay(SERVO_TIME);
+
+      wasteServo.write(CENTER_ANGLE);
+
+      delay(500);
+    }
+
+    //-----------------------------------------------------
+    // Dry Waste
+    //-----------------------------------------------------
+    else
+    {
+      Serial.println("Dry Waste");
+
+      wasteServo.write(LEFT_ANGLE);
+
+      delay(SERVO_TIME);
+
+      wasteServo.write(CENTER_ANGLE);
+
+      delay(500);
+    }
+  }
+
+  delay(100);
+}
+
+//=========================================================
+// Distance Function
+//=========================================================
+int getDistance()
+{
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+
+  digitalWrite(TRIG_PIN, LOW);
+
+  long duration = pulseIn(ECHO_PIN, HIGH);
+
+  int distance = duration * 0.034 / 2;
+
+  return distance;
+}

@@ -1,0 +1,54 @@
+
+// Pin Numbers 
+//=========================================================
+const int TOUCH_PIN = 2;
+const int RELAY_PIN = 8;
+
+//=========================================================
+// Variables
+//=========================================================
+bool relayState = false;
+bool lastTouchState = LOW;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(TOUCH_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
+
+  // Relay OFF initially
+  digitalWrite(RELAY_PIN, LOW);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  // Read touch sensor
+  bool currentTouchState = digitalRead(TOUCH_PIN);
+
+  // Detect a new touch (LOW -> HIGH)
+  if (currentTouchState == HIGH && lastTouchState == LOW)
+  {
+    // Toggle relay state
+    relayState = !relayState;
+
+    digitalWrite(RELAY_PIN, relayState);
+
+    if (relayState)
+      Serial.println("Appliance ON");
+    else
+      Serial.println("Appliance OFF");
+
+    // Small delay to avoid multiple touches
+    delay(300);
+  }
+
+  // Save current state
+  lastTouchState = currentTouchState;
+}

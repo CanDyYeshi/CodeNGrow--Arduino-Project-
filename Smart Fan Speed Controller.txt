@@ -1,0 +1,59 @@
+
+//=========================================================
+// Pin Numbers 
+//=========================================================
+const int THERMISTOR_PIN = A0;
+const int FAN_PIN = 9;
+
+//=========================================================
+// Adjustable Settings
+//=========================================================
+
+// Increase or decrease this value according
+// to your thermistor reading.
+
+const int HOT_THRESHOLD = 600;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(FAN_PIN, OUTPUT);
+
+  digitalWrite(FAN_PIN, LOW);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  // Read thermistor value
+  int sensorValue = analogRead(THERMISTOR_PIN);
+
+  Serial.print("Temperature Reading = ");
+  Serial.println(sensorValue);
+
+  //-------------------------------------------------------
+  // Check Temperature
+  //-------------------------------------------------------
+  if (sensorValue < HOT_THRESHOLD)
+  {
+    // Too Hot -> Fan ON
+    digitalWrite(FAN_PIN, HIGH);
+
+    Serial.println("Fan ON");
+  }
+  else
+  {
+    // Normal Temperature -> Fan OFF
+    digitalWrite(FAN_PIN, LOW);
+
+    Serial.println("Fan OFF");
+  }
+
+  delay(200);
+}

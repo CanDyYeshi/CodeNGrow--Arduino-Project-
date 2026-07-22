@@ -1,0 +1,105 @@
+/*
+==================================================
+
+Condition:
+✔ Detect 2 Claps
+✔ First Double Clap -> Fan ON
+✔ Second Double Clap -> Fan OFF
+
+---------------------------------------------------------
+Pin Connections
+
+=========================================================
+*/
+
+//=========================================================
+// Pin Numbers 
+//=========================================================
+const int SOUND_PIN = 2;
+const int RELAY_PIN = 8;
+
+//=========================================================
+// Adjustable Settings
+//=========================================================
+const unsigned long CLAP_TIMEOUT = 1000;   // Maximum time between 2 claps
+
+//=========================================================
+// Variables
+//=========================================================
+bool fanState = false;
+
+int clapCount = 0;
+unsigned long firstClapTime = 0;
+
+bool lastState = HIGH;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(SOUND_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
+
+  // Fan OFF initially
+  digitalWrite(RELAY_PIN, LOW);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  bool sound = digitalRead(SOUND_PIN);
+
+  //-------------------------------------------------------
+  // Detect a New Clap
+  //-------------------------------------------------------
+  if (sound == LOW && lastState == HIGH)
+  {
+    clapCount++;
+
+    Serial.print("Clap: ");
+    Serial.println(clapCount);
+
+    if (clapCount == 1)
+    {
+      firstClapTime = millis();
+    }
+
+    delay(80);   // Ignore clap bounce
+  }
+
+  lastState = sound;
+
+  //-------------------------------------------------------
+  // Double Clap Detected
+  //-------------------------------------------------------
+  if (clapCount == 2)
+  {
+    if (millis() - firstClapTime <= CLAP_TIMEOUT)
+    {
+      // Toggle Fan
+      fanState = !fanState;
+
+      digitalWrite(RELAY_PIN, fanState);
+
+      if (fanState)
+        Serial.println("Fan ON");
+      else
+        Serial.println("Fan OFF");
+    }
+
+    clapCount = 0;
+  }
+
+  //-------------------------------------------------------
+  // Timeout (Only One Clap)
+  //-------------------------------------------------------
+  if (clapCount == 1 && millis() - firstClapTime > CLAP_TIMEOUT)
+  {
+    clapCount = 0;
+  }
+}

@@ -1,0 +1,147 @@
+/*
+=========================================================
+
+✔ 0 or 1 Parking Slot Full
+   Vehicle detected
+      -> Green LED ON
+      -> 1 Short Beep
+      -> Gate Opens for 3 sec
+      -> Gate Closes
+
+✔ Both Parking Slots Full
+   Vehicle detected
+      -> Red LED ON
+      -> Long Beep (3 sec)
+      -> Gate Remains Closed
+
+
+=========================================================
+*/
+
+#include <Servo.h>
+
+Servo gateServo;
+
+//---------------- Pin Numbers ----------------
+const int IR1 = 2;
+const int IR2 = 3;
+
+const int TRIG = 4;
+const int ECHO = 5;
+
+const int GREEN_LED = 7;
+const int RED_LED = 8;
+
+const int SERVO_PIN = 9;
+const int BUZZER = 10;
+
+//--------------- Adjustable Settings ----------
+const int DETECT_DISTANCE = 15;
+const int GATE_OPEN = 90;
+const int GATE_CLOSE = 0;
+
+void setup()
+{
+  pinMode(IR1, INPUT);
+  pinMode(IR2, INPUT);
+
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+
+  gateServo.attach(SERVO_PIN);
+  gateServo.write(GATE_CLOSE);
+
+  Serial.begin(9600);
+}
+
+void loop()
+{
+  int distance = getDistance();
+
+  int parking1 = digitalRead(IR1);
+  int parking2 = digitalRead(IR2);
+
+  Serial.print("Distance = ");
+  Serial.println(distance);
+
+  //--------------------------------------------------
+  // Vehicle detected at gate
+  //--------------------------------------------------
+  if (distance <= DETECT_DISTANCE)
+  {
+
+    //------------------------------------------------
+    // Parking Full (Both IR Active)
+    //------------------------------------------------
+    if (parking1 == LOW && parking2 == LOW)
+    {
+      gateServo.write(GATE_CLOSE);
+
+      digitalWrite(RED_LED, HIGH);
+      digitalWrite(GREEN_LED, LOW);
+
+      digitalWrite(BUZZER, HIGH);
+      delay(3000);
+      digitalWrite(BUZZER, LOW);
+
+      digitalWrite(RED_LED, LOW);
+    }
+
+    //------------------------------------------------
+    // Parking Available (0 or 1 Slot Occupied)
+    //------------------------------------------------
+    else
+    {
+      digitalWrite(GREEN_LED, HIGH);
+      digitalWrite(RED_LED, LOW);
+
+      // One Short Beep
+      digitalWrite(BUZZER, HIGH);
+      delay(200);
+      digitalWrite(BUZZER, LOW);
+
+      gateServo.write(GATE_OPEN);
+
+      delay(3000);
+
+      gateServo.write(GATE_CLOSE);
+
+      digitalWrite(GREEN_LED, LOW);
+    }
+  }
+
+  else
+  {
+    digitalWrite(RED_LED, LOW);
+    digitalWrite(GREEN_LED, LOW);
+    digitalWrite(BUZZER, LOW);
+
+    gateServo.write(GATE_CLOSE);
+  }
+
+  delay(100);
+}
+
+//==================================================
+// Distance Function
+//==================================================
+int getDistance()
+{
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+
+  digitalWrite(TRIG, LOW);
+
+  long duration = pulseIn(ECHO, HIGH);
+
+  int distance = duration * 0.034 / 2;
+
+  return distance;
+}

@@ -1,0 +1,156 @@
+/*
+=========================================================
+
+20 cm or more  -> Bin Empty (0%)
+15 - 20 cm     -> Bin Filling (25%)
+10 - 15 cm     -> Bin Half Full (50%)
+5 - 10 cm      -> Bin Almost Full (75%)
+Below 5 cm     -> Bin Full (100%) + Buzzer ON
+
+
+=========================================================
+*/
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+//=========================================================
+// LCD Address
+// Change 0x27 to 0x3F if LCD does not display
+//=========================================================
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+//=========================================================
+// Pin Numbers 
+//=========================================================
+const int BUZZER = 7;
+const int TRIG = 9;
+const int ECHO = 10;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
+  pinMode(BUZZER, OUTPUT);
+
+  lcd.init();
+  lcd.backlight();
+
+  lcd.setCursor(0,0);
+  lcd.print("Smart Bin");
+
+  lcd.setCursor(0,1);
+  lcd.print("Initializing");
+
+  delay(2000);
+  lcd.clear();
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  int distance = getDistance();
+
+  Serial.print("Distance = ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  //-------------------------------------------------------
+  // Bin Empty
+  //-------------------------------------------------------
+  if(distance >= 20)
+  {
+    lcd.setCursor(0,0);
+    lcd.print("Bin Empty      ");
+
+    lcd.setCursor(0,1);
+    lcd.print("Level : 0%     ");
+
+    digitalWrite(BUZZER, LOW);
+  }
+
+  //-------------------------------------------------------
+  // 25%
+  //-------------------------------------------------------
+  else if(distance >= 15)
+  {
+    lcd.setCursor(0,0);
+    lcd.print("Bin Filling    ");
+
+    lcd.setCursor(0,1);
+    lcd.print("Level : 25%    ");
+
+    digitalWrite(BUZZER, LOW);
+  }
+
+  //-------------------------------------------------------
+  // 50%
+  //-------------------------------------------------------
+  else if(distance >= 10)
+  {
+    lcd.setCursor(0,0);
+    lcd.print("Half Full      ");
+
+    lcd.setCursor(0,1);
+    lcd.print("Level : 50%    ");
+
+    digitalWrite(BUZZER, LOW);
+  }
+
+  //-------------------------------------------------------
+  // 75%
+  //-------------------------------------------------------
+  else if(distance > 5)
+  {
+    lcd.setCursor(0,0);
+    lcd.print("Almost Full    ");
+
+    lcd.setCursor(0,1);
+    lcd.print("Level : 75%    ");
+
+    digitalWrite(BUZZER, LOW);
+  }
+
+  //-------------------------------------------------------
+  // 100%
+  //-------------------------------------------------------
+  else
+  {
+    lcd.setCursor(0,0);
+    lcd.print("Bin FULL!      ");
+
+    lcd.setCursor(0,1);
+    lcd.print("Level :100%    ");
+
+    digitalWrite(BUZZER, HIGH);
+  }
+
+  delay(500);
+}
+
+//=========================================================
+// Function to Measure Distance
+//=========================================================
+int getDistance()
+{
+  digitalWrite(TRIG, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIG, HIGH);
+  delayMicroseconds(10);
+
+  digitalWrite(TRIG, LOW);
+
+  long duration = pulseIn(ECHO, HIGH);
+
+  int distance = duration * 0.034 / 2;
+
+  return distance;
+}

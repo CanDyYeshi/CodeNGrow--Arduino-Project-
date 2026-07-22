@@ -1,0 +1,53 @@
+
+//=========================================================
+// Pin Numbers 
+//=========================================================
+const int PIR_PIN = 2;
+const int LED_PIN = 13;
+
+//=========================================================
+// Adjustable Settings
+//=========================================================
+const int LED_ON_TIME = 2000;   // LED ON time (milliseconds)
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(PIR_PIN, INPUT);
+  pinMode(LED_PIN, OUTPUT);
+
+  digitalWrite(LED_PIN, LOW);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  // Read PIR sensor
+  int motion = digitalRead(PIR_PIN);
+
+  if (motion == HIGH)
+  {
+    Serial.println("Motion Detected!");
+
+    // Turn LED ON
+    digitalWrite(LED_PIN, HIGH);
+
+    // Keep LED ON for 2 seconds
+    delay(LED_ON_TIME);
+  }
+  else
+  {
+    Serial.println("No Motion");
+
+    // Turn LED OFF
+    digitalWrite(LED_PIN, LOW);
+  }
+
+  delay(100);
+}

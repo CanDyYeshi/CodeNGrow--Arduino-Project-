@@ -1,0 +1,62 @@
+#include <Servo.h>
+
+//=========================================================
+// Pin Numbers 
+//=========================================================
+const int RAIN_SENSOR = 2;
+const int SERVO_PIN = 3;
+
+//=========================================================
+// Adjustable Settings
+//=========================================================
+const int SERVO_UP = 90;      // Position when rain is detected
+const int SERVO_DOWN = 0;     // Position when no rain
+
+Servo weatherServo;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(RAIN_SENSOR, INPUT);
+
+  weatherServo.attach(SERVO_PIN);
+
+  // Start with servo down
+  weatherServo.write(SERVO_DOWN);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  // Read rain sensor
+  int rain = digitalRead(RAIN_SENSOR);
+
+  //-------------------------------------------------------
+  // Rain Detected
+  //-------------------------------------------------------
+  // Most rain sensor modules output LOW when wet
+  if (rain == LOW)
+  {
+    Serial.println("Rain Detected");
+
+    weatherServo.write(SERVO_UP);
+  }
+
+  //-------------------------------------------------------
+  // No Rain
+  //-------------------------------------------------------
+  else
+  {
+    Serial.println("No Rain");
+
+    weatherServo.write(SERVO_DOWN);
+  }
+
+  delay(100);
+}

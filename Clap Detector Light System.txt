@@ -1,0 +1,98 @@
+/*
+=========================================================
+Condition:
+✔ Detect 2 Claps
+✔ First Double Clap -> Light ON
+✔ Second Double Clap -> Light OFF
+
+
+=========================================================
+*/
+
+//=========================================================
+// Pin Numbers 
+//=========================================================
+const int SOUND_PIN = 2;
+const int RELAY_PIN = 8;
+
+//=========================================================
+// Adjustable Settings
+//=========================================================
+const unsigned long CLAP_TIMEOUT = 1000;   // Maximum gap between 2 claps
+
+//=========================================================
+// Variables
+//=========================================================
+bool lightState = false;
+
+int clapCount = 0;
+unsigned long firstClapTime = 0;
+
+bool lastState = HIGH;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(SOUND_PIN, INPUT);
+  pinMode(RELAY_PIN, OUTPUT);
+
+  digitalWrite(RELAY_PIN, LOW);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  bool sound = digitalRead(SOUND_PIN);
+
+  // Detect a new clap
+  if(sound == LOW && lastState == HIGH)
+  {
+    clapCount++;
+
+    Serial.print("Clap : ");
+    Serial.println(clapCount);
+
+    if(clapCount == 1)
+    {
+      firstClapTime = millis();
+    }
+
+    delay(80);      // Ignore clap bounce
+  }
+
+  lastState = sound;
+
+  //------------------------------------------------------
+  // Double Clap Detected
+  //------------------------------------------------------
+  if(clapCount == 2)
+  {
+    if(millis() - firstClapTime <= CLAP_TIMEOUT)
+    {
+      lightState = !lightState;
+
+      digitalWrite(RELAY_PIN, lightState);
+
+      if(lightState)
+        Serial.println("Light ON");
+      else
+        Serial.println("Light OFF");
+    }
+
+    clapCount = 0;
+  }
+
+  //------------------------------------------------------
+  // Timeout
+  //------------------------------------------------------
+  if(clapCount == 1 && millis() - firstClapTime > CLAP_TIMEOUT)
+  {
+    clapCount = 0;
+  }
+}

@@ -1,0 +1,106 @@
+
+#include <Servo.h>
+
+//=========================================================
+// Pin Numbers 
+//=========================================================
+const int TRIG_PIN = 9;
+const int ECHO_PIN = 10;
+const int SERVO_PIN = 3;
+
+//=========================================================
+// Adjustable Settings
+//=========================================================
+const int DETECT_DISTANCE = 20;    // Detection distance (cm)
+
+const int LID_OPEN = 90;           // Servo angle when lid opens
+const int LID_CLOSE = 0;           // Servo angle when lid closes
+
+const int CLOSE_DELAY = 2000;      // Close after 2 seconds
+
+Servo dustbinServo;
+
+bool lidOpen = false;
+unsigned long objectGoneTime = 0;
+
+//=========================================================
+// Setup
+//=========================================================
+void setup()
+{
+  Serial.begin(9600);
+
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+
+  dustbinServo.attach(SERVO_PIN);
+
+  // Lid starts closed
+  dustbinServo.write(LID_CLOSE);
+}
+
+//=========================================================
+// Main Loop
+//=========================================================
+void loop()
+{
+  int distance = getDistance();
+
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+  //=======================================================
+  // Object Detected
+  //=======================================================
+  if (distance > 0 && distance <= DETECT_DISTANCE)
+  {
+    // Open lid
+    dustbinServo.write(LID_OPEN);
+
+    lidOpen = true;
+
+    // Reset timer while object is present
+    objectGoneTime = millis();
+  }
+
+  //=======================================================
+  // No Object Detected
+  //=======================================================
+  else
+  {
+    if (lidOpen)
+    {
+      // Wait for 2 seconds after object disappears
+      if (millis() - objectGoneTime >= CLOSE_DELAY)
+      {
+        dustbinServo.write(LID_CLOSE);
+        lidOpen = false;
+      }
+    }
+  }
+
+  delay(100);
+}
+
+//=========================================================
+// Function to Measure Distance
+//=========================================================
+int getDistance()
+{
+  long duration;
+
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+
+  digitalWrite(TRIG_PIN, LOW);
+
+  duration = pulseIn(ECHO_PIN, HIGH);
+
+  int distance = duration * 0.034 / 2;
+
+  return distance;
+}
