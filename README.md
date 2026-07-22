@@ -116,9 +116,7 @@ Your support motivates us to create more open-source Arduino and Robotics projec
 
 ---
 
-Here's a polished and professional version of the **Author** section for your `README.md`:
 
-```markdown
 ## 👨‍💻 Author
 
 ### **Mr. Chandrakant Yeshi**
