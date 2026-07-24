@@ -102,3 +102,4 @@ int getDistance()
 
   return distance;
 }
+
