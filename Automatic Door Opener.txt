@@ -1,12 +1,7 @@
-/*
-=========================================================
-Project Name : Automatic Door Opener
-Board        : Arduino UNO
-
 #include <Servo.h>
 
 //=========================================================
-// Pin Numbers 
+// Pin Numbers
 //=========================================================
 const int TRIG_PIN = 9;
 const int ECHO_PIN = 10;
@@ -15,12 +10,10 @@ const int SERVO_PIN = 3;
 //=========================================================
 // Adjustable Settings
 //=========================================================
-const int DETECT_DISTANCE = 20;   // Detection distance (cm)
-
-const int DOOR_OPEN = 90;         // Door open angle
-const int DOOR_CLOSE = 0;         // Door close angle
-
-const int CLOSE_DELAY = 2000;     // Close after 2 seconds
+const int DETECT_DISTANCE = 20;   // cm
+const int DOOR_OPEN = 90;         // Servo angle
+const int DOOR_CLOSE = 0;
+const unsigned long CLOSE_DELAY = 2000; // ms
 
 Servo doorServo;
 
@@ -38,9 +31,9 @@ void setup()
   pinMode(ECHO_PIN, INPUT);
 
   doorServo.attach(SERVO_PIN);
-
-  // Door starts closed
   doorServo.write(DOOR_CLOSE);
+
+  delay(500);
 }
 
 //=========================================================
@@ -54,33 +47,27 @@ void loop()
   Serial.print(distance);
   Serial.println(" cm");
 
-  //=======================================================
-  // Object Detected
-  //=======================================================
-  if (distance > 0 && distance <= DETECT_DISTANCE)
+  // Object detected
+  if (distance != -1 && distance <= DETECT_DISTANCE)
   {
-    // Open the door
-    doorServo.write(DOOR_OPEN);
+    if (!doorOpen)
+    {
+      doorServo.write(DOOR_OPEN);
+      doorOpen = true;
+      Serial.println("Door Open");
+    }
 
-    doorOpen = true;
-
-    // Reset timer while object is present
     objectGoneTime = millis();
   }
 
-  //=======================================================
-  // No Object Detected
-  //=======================================================
+  // No object detected
   else
   {
-    if (doorOpen)
+    if (doorOpen && (millis() - objectGoneTime >= CLOSE_DELAY))
     {
-      // Close door after 2 seconds
-      if (millis() - objectGoneTime >= CLOSE_DELAY)
-      {
-        doorServo.write(DOOR_CLOSE);
-        doorOpen = false;
-      }
+      doorServo.write(DOOR_CLOSE);
+      doorOpen = false;
+      Serial.println("Door Closed");
     }
   }
 
@@ -92,19 +79,26 @@ void loop()
 //=========================================================
 int getDistance()
 {
-  long duration;
-
+  // Clear trigger
   digitalWrite(TRIG_PIN, LOW);
   delayMicroseconds(2);
 
+  // Send 10 µs pulse
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
-
   digitalWrite(TRIG_PIN, LOW);
 
-  duration = pulseIn(ECHO_PIN, HIGH);
+  // Read echo with timeout (30 ms ≈ 5 m)
+  long duration = pulseIn(ECHO_PIN, HIGH, 30000);
 
-  int distance = duration * 0.034 / 2;
+  // No echo received
+  if (duration == 0)
+  {
+    return -1;
+  }
+
+  // Convert to centimeters
+  int distance = duration * 0.0343 / 2;
 
   return distance;
 }
