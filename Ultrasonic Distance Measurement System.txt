@@ -1,6 +1,6 @@
 
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal_I2C.h> // Required library to interface with the I2C LCD display 
 
 //=========================================================
 // LCD Settings
