@@ -9,7 +9,7 @@
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 //=========================================================
-// Pin Numbers (Students can change if required)
+// Pin Numbers 
 //=========================================================
 const int TRIG_PIN = 9;
 const int ECHO_PIN = 8;
