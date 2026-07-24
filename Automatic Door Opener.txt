@@ -12,7 +12,7 @@ const int SERVO_PIN = 3;
 //=========================================================
 const int DETECT_DISTANCE = 20;   // cm
 const int DOOR_OPEN = 90;         // Servo angle
-const int DOOR_CLOSE = 0;
+const int DOOR_CLOSE = 0;         // Reset
 const unsigned long CLOSE_DELAY = 2000; // ms
 
 Servo doorServo;
